@@ -1,7 +1,11 @@
 import { useState } from "react";
 import server from "./server";
+import {keccak256} from "ethereum-cryptography/keccak";
+import {bytesToHex, utf8ToBytes} from "ethereum-cryptography/utils";
+import * as secp from "ethereum-cryptography/secp256k1";
 
-function Transfer({ address, setBalance }) {
+
+function Transfer({ address, setBalance, privateKey }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
 
@@ -11,15 +15,36 @@ function Transfer({ address, setBalance }) {
     evt.preventDefault();
 
     try {
+    
+      /* Creating a signature representing the transaction and 
+      extracting & sending r & s components of the signature to the server
+      for authentication of the sender's identity */
+      
+      const transaction = {
+        sender: address,
+        amount: parseInt(sendAmount),
+        receiver: recipient
+      };
+  
+      const tranStr = JSON.stringify(transaction);
+      const tranHash = keccak256(utf8ToBytes(tranStr));
+      const tranSignature = secp.secp256k1.sign(bytesToHex(tranHash),privateKey);
+ 
+      const r = tranSignature['r'];
+      const s = tranSignature['s'];
+    
       const {
         data: { balance },
       } = await server.post(`send`, {
-        sender: address,
+        r: r.toString(16),
+        s: s.toString(16),
         amount: parseInt(sendAmount),
         recipient,
       });
+    
       setBalance(balance);
     } catch (ex) {
+      console.log(ex);
       alert(ex.response.data.message);
     }
   }

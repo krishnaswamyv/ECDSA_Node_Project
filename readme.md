@@ -2,6 +2,7 @@
 
 This project has been enhanced to pass digital signature instead of sender's address from client to server for authenticating sender's identity before a wallet transaction can be authorized.
 Also, the address will be derived based on the private key entered by the sender. The Private Key entry will however be masked so it cannot be viewed. Only the first 10 characters of the Sender's address will be displayed for security. 
+Futher, using a nonce its ensured that a differnet signature is generated everytime a new transfer transaction is initiated to prevent the signature from being intercepted and used for double-spending by a hacker. 
 
 This project is an example of using a client and server to facilitate transfers between different addresses. Since there is just a single server on the back-end handling transfers, this is clearly very centralized. We won't worry about distributed consensus for this project.
 

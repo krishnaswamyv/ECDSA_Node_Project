@@ -4,6 +4,7 @@ import {keccak256} from "ethereum-cryptography/keccak";
 import {bytesToHex, utf8ToBytes} from "ethereum-cryptography/utils";
 import * as secp from "ethereum-cryptography/secp256k1";
 
+let nonce = 0;
 
 function Transfer({ address, setBalance, privateKey }) {
   const [sendAmount, setSendAmount] = useState("");
@@ -20,10 +21,12 @@ function Transfer({ address, setBalance, privateKey }) {
       extracting & sending r & s components of the signature to the server
       for authentication of the sender's identity */
       
+      nonce++;
       const transaction = {
         sender: address,
         amount: parseInt(sendAmount),
-        receiver: recipient
+        receiver: recipient,
+        nonce: nonce
       };
   
       const tranStr = JSON.stringify(transaction);
@@ -44,6 +47,7 @@ function Transfer({ address, setBalance, privateKey }) {
     
       setBalance(balance);
     } catch (ex) {
+      nonce--;
       console.log(ex);
       alert(ex.response.data.message);
     }

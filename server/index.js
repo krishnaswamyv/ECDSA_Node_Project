@@ -28,6 +28,8 @@
     "1909e4ac861b19e309e12f2cde6ff1e911eb286f": 225
   };
 
+  let nonce = 0;
+
   app.get("/balance/:address", (req, res) => {
     const { address } = req.params;
     const balance = balances[address] || 0;
@@ -45,6 +47,7 @@
 
     let senderAddress;
     let senderEqReceiver = false;
+    nonce++;
 
     addPubKeyMap.every((el) => {
 
@@ -59,7 +62,8 @@
     const transaction = {
       sender: senderAddress,
       amount: parseInt(amount),
-      receiver: recipient
+      receiver: recipient,
+      nonce: nonce
     };
 
     const tranStr = JSON.stringify(transaction);
@@ -83,6 +87,7 @@
 
 
     if(senderEqReceiver){
+      nonce--;
       console.log("Sender is same as the Recipient");
       res.status(400).send({ message: "Transaction declined. Receiver address cannot be the same as the Sender!" });
     }
@@ -91,25 +96,34 @@
 
       
       if (!senderAddress){
+        nonce--;
         console.log("Sender could not be verified");
         res.status(400).send({ message: "Sender could not be verified!" });
       }
       
       else {
 
+        if (balances[recipient] === undefined) {
+          nonce--;
+          res.status(400).send({ message: "Recipient address is not valid!" });
+        }
+        else {
+          setInitialBalance(senderAddress);
+          setInitialBalance(recipient);
 
-      setInitialBalance(senderAddress);
-      setInitialBalance(recipient);
+          if (balances[senderAddress] < amount) {
+            nonce--;
+            res.status(400).send({ message: "Not enough funds!" });
+          } else {
+              balances[senderAddress] -= amount;
+              balances[recipient] += amount;
+              res.send({ balance: balances[senderAddress] });       
+          }
 
-      if (balances[senderAddress] < amount) {
-        res.status(400).send({ message: "Not enough funds!" });
-      } else {
-        balances[senderAddress] -= amount;
-        balances[recipient] += amount;
-        res.send({ balance: balances[senderAddress] });
+        }
       }
+  
     }
-  }
   });
 
   app.listen(port, () => {

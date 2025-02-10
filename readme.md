@@ -1,5 +1,8 @@
 ## ECDSA Node
 
+This project has been enhanced to pass digital signature instead of sender's address from client to server for authenticating sender's identity before a wallet transaction can be authorized.
+Also, the address will be derived based on the private key entered by the sender. The Private Key entry will however be masked so it cannot be viewed. Only the first 10 characters of the Sender's address will be displayed for security. 
+
 This project is an example of using a client and server to facilitate transfers between different addresses. Since there is just a single server on the back-end handling transfers, this is clearly very centralized. We won't worry about distributed consensus for this project.
 
 However, something that we would like to incoporate is Public Key Cryptography. By using Elliptic Curve Digital Signatures we can make it so the server only allows transfers that have been signed for by the person who owns the associated address.
